@@ -1,14 +1,28 @@
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-from urllib.parse import quote_plus
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "mysql+pymysql://root:YOUR_LOCAL_PASSWORD@localhost/college_erp"
+)
 
-password = quote_plus("MOHITrana@900")
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True
+)
 
-DATABASE_URL = f"mysql+pymysql://root:{password}@localhost:3306/college_erp"
-
-engine = create_engine(DATABASE_URL)
-
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
 Base = declarative_base()
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
